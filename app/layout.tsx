@@ -5,7 +5,7 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Health Admin Panel',
+  title: 'Jeevan Path Admin Panel',
   description: 'Admin panel for managing health resources',
 };
 
