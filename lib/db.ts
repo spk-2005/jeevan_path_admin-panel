@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = 'mongodb+srv://demo:spk@cluster0.p6esyqh.mongodb.net/';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://demo:spk@cluster0.p6esyqh.mongodb.net/';
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');
@@ -26,7 +26,6 @@ if (!global.mongoose) {
 
 export async function connectDB() {
   if (cached.conn) {
-    console.log("⚡ MongoDB already connected.");
     return cached.conn;
   }
 
@@ -36,11 +35,7 @@ export async function connectDB() {
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log("✅ MongoDB Connected Successfully!");
       return mongoose;
-    }).catch((err) => {
-      console.error("❌ MongoDB Connection Error:", err.message);
-      throw err;
     });
   }
 
