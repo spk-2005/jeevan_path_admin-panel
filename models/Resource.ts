@@ -1,7 +1,8 @@
-import mongoose, { Schema, Model } from 'mongoose';
+import mongoose, { Schema, Model, Types } from 'mongoose';
 
 export interface IResource {
   _id?: string;
+  userId?: Types.ObjectId;
   name: string;
   type: 'clinic' | 'pharmacy' | 'blood';
   address?: string;
@@ -21,6 +22,10 @@ export interface IResource {
 }
 
 const ResourceSchema = new Schema<IResource>({
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  },
   name: {
     type: String,
     required: true,

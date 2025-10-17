@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type');
     const language = searchParams.get('language');
     const minRating = searchParams.get('minRating');
+    const userId = searchParams.get('userId');
 
     let query: any = {};
 
@@ -33,7 +34,11 @@ export async function GET(request: NextRequest) {
       query.rating = { $gte: parseFloat(minRating) };
     }
 
-    const resources = await Resource.find(query).sort({ createdAt: -1 });
+    if (userId) {
+      query.userId = userId;
+    }
+
+    const resources = await Resource.find(query).populate('userId', 'name phone firebaseUid').sort({ createdAt: -1 });
 
     return NextResponse.json({ success: true, data: resources });
   } catch (error: any) {
