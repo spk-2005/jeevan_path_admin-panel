@@ -159,10 +159,10 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-4xl font-bold text-slate-900">Users</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Users</h1>
           <p className="text-slate-600 mt-2">Manage platform users</p>
         </motion.div>
         <Button
@@ -170,7 +170,7 @@ export default function UsersPage() {
             resetForm();
             setIsModalOpen(true);
           }}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
         >
           <Plus className="w-5 h-5 mr-2" />
           Add User
@@ -181,9 +181,9 @@ export default function UsersPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white rounded-xl shadow-sm border border-slate-200 p-6"
+        className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6"
       >
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <Input
@@ -196,7 +196,9 @@ export default function UsersPage() {
           </div>
         </div>
 
-        <DataTable columns={columns} data={filteredUsers} />
+        <div className="overflow-x-auto">
+          <DataTable columns={columns} data={filteredUsers} />
+        </div>
       </motion.div>
 
       <Modal
@@ -250,7 +252,7 @@ export default function UsersPage() {
               <option value="ta">Tamil</option>
             </select>
           </div>
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
               {editingUser ? 'Update' : 'Create'}
             </Button>

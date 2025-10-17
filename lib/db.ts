@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://demo:spk@cluster0.p6esyqh.mongodb.net/';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://prasannasimha5002_db_user:spk@cluster0.p6esyqh.mongodb.net/jeevanpath?retryWrites=true&w=majority';
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');

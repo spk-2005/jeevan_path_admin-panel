@@ -142,9 +142,9 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-4xl font-bold text-slate-900">Feedback</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Feedback</h1>
         <p className="text-slate-600 mt-2">User feedback and ratings</p>
       </motion.div>
 
@@ -152,9 +152,9 @@ export default function FeedbackPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white rounded-xl shadow-sm border border-slate-200 p-6"
+        className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6"
       >
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <Input
@@ -183,7 +183,9 @@ export default function FeedbackPage() {
           </select>
         </div>
 
-        <DataTable columns={columns} data={filteredFeedback} />
+        <div className="overflow-x-auto">
+          <DataTable columns={columns} data={filteredFeedback} />
+        </div>
       </motion.div>
     </div>
   );

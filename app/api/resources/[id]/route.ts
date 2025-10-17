@@ -9,7 +9,7 @@ export async function GET(
   try {
     await connectDB();
 
-    const resource = await Resource.findById(params.id);
+    const resource = await Resource.findById(params.id).populate('userId', 'name phone firebaseUid');
 
     if (!resource) {
       return NextResponse.json(

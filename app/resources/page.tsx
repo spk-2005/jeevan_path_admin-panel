@@ -1,15 +1,27 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, Plus, Edit2, Trash2, MapPin, Star } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Star, User } from 'lucide-react';
 import DataTable from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+interface User {
+  _id: string;
+  name?: string;
+  phone?: string;
+  firebaseUid: string;
+}
+
 interface Resource {
   _id: string;
+  userId?: {
+    _id: string;
+    name?: string;
+    phone?: string;
+  };
   name: string;
   type: 'clinic' | 'pharmacy' | 'blood';
   address?: string;
@@ -30,13 +42,16 @@ interface Resource {
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<Resource[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [filteredResources, setFilteredResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [userFilter, setUserFilter] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
   const [formData, setFormData] = useState({
+    userId: '',
     name: '',
     type: 'clinic' as 'clinic' | 'pharmacy' | 'blood',
     address: '',
@@ -52,6 +67,7 @@ export default function ResourcesPage() {
 
   useEffect(() => {
     fetchResources();
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -65,8 +81,12 @@ export default function ResourcesPage() {
       filtered = filtered.filter((r) => r.type === typeFilter);
     }
 
+    if (userFilter) {
+      filtered = filtered.filter((r) => r.userId?._id === userFilter);
+    }
+
     setFilteredResources(filtered);
-  }, [searchTerm, typeFilter, resources]);
+  }, [searchTerm, typeFilter, userFilter, resources]);
 
   const fetchResources = async () => {
     try {
@@ -83,10 +103,22 @@ export default function ResourcesPage() {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch('/api/users');
+      const data = await res.json();
+      if (data.success) {
+        setUsers(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const payload = {
+      const payload: any = {
         name: formData.name,
         type: formData.type,
         address: formData.address,
@@ -101,6 +133,10 @@ export default function ResourcesPage() {
         languages: formData.languages.split(',').map((s) => s.trim()).filter(Boolean),
         wheelchairAccessible: formData.wheelchairAccessible,
       };
+
+      if (formData.userId) {
+        payload.userId = formData.userId;
+      }
 
       const url = editingResource ? `/api/resources/${editingResource._id}` : '/api/resources';
       const method = editingResource ? 'PUT' : 'POST';
@@ -125,6 +161,7 @@ export default function ResourcesPage() {
   const handleEdit = (resource: Resource) => {
     setEditingResource(resource);
     setFormData({
+      userId: resource.userId?._id || '',
       name: resource.name,
       type: resource.type,
       address: resource.address || '',
@@ -156,6 +193,7 @@ export default function ResourcesPage() {
 
   const resetForm = () => {
     setFormData({
+      userId: '',
       name: '',
       type: 'clinic',
       address: '',
@@ -172,6 +210,22 @@ export default function ResourcesPage() {
   };
 
   const columns = [
+    {
+      key: 'userId',
+      label: 'Assigned User',
+      render: (value: any) => (
+        <div className="flex items-center gap-2">
+          {value ? (
+            <>
+              <User className="w-4 h-4 text-slate-500" />
+              <span className="text-sm">{value.name || value.firebaseUid}</span>
+            </>
+          ) : (
+            <span className="text-slate-400 text-sm">Unassigned</span>
+          )}
+        </div>
+      ),
+    },
     { key: 'name', label: 'Name' },
     {
       key: 'type',
@@ -182,7 +236,13 @@ export default function ResourcesPage() {
         </span>
       ),
     },
-    { key: 'address', label: 'Address' },
+    {
+      key: 'address',
+      label: 'Address',
+      render: (value: string) => (
+        <span className="max-w-xs truncate block">{value || '-'}</span>
+      ),
+    },
     { key: 'contact', label: 'Contact' },
     {
       key: 'rating',
@@ -204,7 +264,7 @@ export default function ResourcesPage() {
               e.stopPropagation();
               handleEdit(row);
             }}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-blue-600 hover:text-blue-800 transition-colors"
           >
             <Edit2 className="w-4 h-4" />
           </button>
@@ -213,7 +273,7 @@ export default function ResourcesPage() {
               e.stopPropagation();
               handleDelete(row._id);
             }}
-            className="text-red-600 hover:text-red-800"
+            className="text-red-600 hover:text-red-800 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -231,18 +291,18 @@ export default function ResourcesPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-4xl font-bold text-slate-900">Resources</h1>
-          <p className="text-slate-600 mt-2">Manage health resources</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Resources</h1>
+          <p className="text-slate-600 mt-2">Manage health resources and assign to users</p>
         </motion.div>
         <Button
           onClick={() => {
             resetForm();
             setIsModalOpen(true);
           }}
-          className="bg-green-600 hover:bg-green-700"
+          className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
         >
           <Plus className="w-5 h-5 mr-2" />
           Add Resource
@@ -253,9 +313,9 @@ export default function ResourcesPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white rounded-xl shadow-sm border border-slate-200 p-6"
+        className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6"
       >
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-col lg:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <Input
@@ -276,9 +336,23 @@ export default function ResourcesPage() {
             <option value="pharmacy">Pharmacy</option>
             <option value="blood">Blood Bank</option>
           </select>
+          <select
+            value={userFilter}
+            onChange={(e) => setUserFilter(e.target.value)}
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="">All Users</option>
+            {users.map((user) => (
+              <option key={user._id} value={user._id}>
+                {user.name || user.firebaseUid}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <DataTable columns={columns} data={filteredResources} />
+        <div className="overflow-x-auto">
+          <DataTable columns={columns} data={filteredResources} />
+        </div>
       </motion.div>
 
       <Modal
@@ -290,7 +364,24 @@ export default function ResourcesPage() {
         title={editingResource ? 'Edit Resource' : 'Add Resource'}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Assign to User (Optional)
+            </label>
+            <select
+              value={formData.userId}
+              onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">-- No User (Unassigned) --</option>
+              {users.map((user) => (
+                <option key={user._id} value={user._id}>
+                  {user.name || user.firebaseUid} {user.phone ? `(${user.phone})` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Name *</label>
               <Input
@@ -332,7 +423,7 @@ export default function ResourcesPage() {
               onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Longitude *
@@ -358,7 +449,7 @@ export default function ResourcesPage() {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Open Time</label>
               <Input
@@ -412,7 +503,7 @@ export default function ResourcesPage() {
               Wheelchair Accessible
             </label>
           </div>
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700">
               {editingResource ? 'Update' : 'Create'}
             </Button>
