@@ -212,7 +212,7 @@ export default function UsersPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Firebase UID *
+              User ID *
             </label>
             <Input
               type="text"
